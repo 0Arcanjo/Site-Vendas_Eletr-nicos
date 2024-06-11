@@ -1,0 +1,212 @@
+package com.example.model;
+
+// Importações necessárias para anotações JPA
+import javax.persistence.*;
+
+// Anotação para a entidade JPA
+@Entity
+@Inheritance(strategy = InheritanceType.JOINED)
+public abstract class Produto {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    private String nome;
+    private double preco;
+
+    // Construtor padrão
+    public Produto() {}
+
+    // Construtor com parâmetros
+    public Produto(String nome, double preco) {
+        this.nome = nome;
+        this.preco = preco;
+    }
+
+    // Getters e Setters
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getNome() {
+        return nome;
+    }
+
+    public void setNome(String nome) {
+        this.nome = nome;
+    }
+
+    public double getPreco() {
+        return preco;
+    }
+
+    public void setPreco(double preco) {
+        this.preco = preco;
+    }
+
+    // Método abstrato que deve ser implementado pelas subclasses
+    public abstract String getDetalhes();
+}
+
+##parte 2
+
+package com.example.model;
+
+import javax.persistence.Entity;
+
+@Entity
+public class ProdutoEletronico extends Produto {
+    private String marca;
+    private String modelo;
+
+    // Construtor padrão
+    public ProdutoEletronico() {}
+
+    // Construtor com parâmetros
+    public ProdutoEletronico(String nome, double preco, String marca, String modelo) {
+        super(nome, preco); // Chama o construtor da superclasse
+        this.marca = marca;
+        this.modelo = modelo;
+    }
+
+    // Getters e Setters
+    public String getMarca() {
+        return marca;
+    }
+
+    public void setMarca(String marca) {
+        this.marca = marca;
+    }
+
+    public String getModelo() {
+        return modelo;
+    }
+
+    public void setModelo(String modelo) {
+        this.modelo = modelo;
+    }
+
+    @Override
+    public String getDetalhes() {
+        return "Marca: " + marca + ", Modelo: " + modelo;
+    }
+}
+
+>>>Parte 3
+
+package com.example.model;
+
+import javax.persistence.Entity;
+
+@Entity
+public class AcessorioEletronico extends Produto {
+    private String tipoAcessorio;
+
+    // Construtor padrão
+    public AcessorioEletronico() {}
+
+    // Construtor com parâmetros
+    public AcessorioEletronico(String nome, double preco, String tipoAcessorio) {
+        super(nome, preco); // Chama o construtor da superclasse
+        this.tipoAcessorio = tipoAcessorio;
+    }
+
+    // Getters e Setters
+    public String getTipoAcessorio() {
+        return tipoAcessorio;
+    }
+
+    public void setTipoAcessorio(String tipoAcessorio) {
+        this.tipoAcessorio = tipoAcessorio;
+    }
+
+    @Override
+    public String getDetalhes() {
+        return "Tipo de Acessório: " + tipoAcessorio;
+    }
+}
+
+>>>Parte 4
+
+package com.example.repository;
+
+import com.example.model.Produto;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+@Repository
+public interface ProdutoRepository extends JpaRepository<Produto, Long> {
+    // Métodos de consulta personalizados podem ser adicionados aqui
+}
+
+>>>Parte 5
+
+package com.example.service;
+
+import com.example.model.Produto;
+import com.example.repository.ProdutoRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+
+@Service
+public class ProdutoService {
+    @Autowired
+    private ProdutoRepository produtoRepository;
+
+    // Método para listar todos os produtos
+    public List<Produto> listarTodos() {
+        return produtoRepository.findAll();
+    }
+
+    // Método para salvar um produto
+    public Produto salvarProduto(Produto produto) {
+        return produtoRepository.save(produto);
+    }
+
+    // Método para buscar produto por ID
+    public Produto buscarPorId(Long id) {
+        return produtoRepository.findById(id).orElse(null);
+    }
+
+    // Método para excluir um produto
+    public void excluirProduto(Long id) {
+        produtoRepository.deleteById(id);
+    }
+}
+
+>>>Parte 6
+
+package com.example.controller;
+
+import com.example.model.Produto;
+import com.example.service.ProdutoService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@RestController
+@RequestMapping("/api/produtos")
+public class ProdutoController {
+    @Autowired
+    private ProdutoService produtoService;
+
+    // Método para listar todos os produtos
+    @GetMapping
+    public List<Produto> listarTodos() {
+        return produtoService.listarTodos();
+    }
+
+    // Método para obter um produto por ID
+    @GetMapping("/{id}")
+    public Produto buscarPorId(@PathVariable Long id) {
+        return produtoService.buscarPorId(id);
+    }
+
+    // Método para salvar um novo
